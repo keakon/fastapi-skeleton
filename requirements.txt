@@ -1,0 +1,11 @@
+argon2-cffi
+asyncmy
+fastapi
+pydantic
+pydantic-settings
+pyseto
+python-multipart
+redis[hiredis]
+sqlalchemy[asyncio]
+sqlmodel
+uvicorn[standard]

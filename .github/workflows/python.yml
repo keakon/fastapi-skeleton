@@ -1,0 +1,47 @@
+name: Python
+
+on:
+  push:
+    paths-ignore:
+      - '*.md'
+  pull_request:
+    paths-ignore:
+      - '*.md'
+
+jobs:
+  test-ubuntu:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+        cache: 'pip'
+    - name: Install dependencies
+      run: |
+        apt-get update
+        apt-get install -y --no-install-recommends mysql-client
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt -r requirements-test.txt
+    - name: Setup MySQL
+      uses: mirromutth/mysql-action@v1.1
+      with:
+        mysql root password: "123"
+    - name: Test
+      run: |
+        mysql -uroot -p123 test < db/*.sql
+        python create_admin.py admin
+        pytest --ruff app --cov=app tests
+      env:
+        MYSQL_DSN: mysql+asyncmy://root:123@127.0.0.1:3306/test?charset=utf8mb4

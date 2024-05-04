@@ -1,0 +1,9 @@
+.*
+*.py[co]
+!.github
+!.gitignore
+bin/
+include/
+lib/
+pyvenv.cfg
+*.rdb
