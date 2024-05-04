@@ -1,11 +1,13 @@
 from datetime import datetime
+import logging
 from time import time
 
 from argon2 import PasswordHasher
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import async_session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 from sqlmodel import delete, Field, select
+from starlette.exceptions import HTTPException
 
 from app.config import config
 from app.schemas.token import TokenPayload
@@ -42,7 +44,7 @@ class User(UserBase, table=True):
         return ph.verify(HASHED_PASSWORD_PREFIX + hashed_password, password)
 
     @classmethod
-    async def get_verified_user_id(cls, session: async_session, name: str, password: str) -> int:
+    async def get_verified_user_id(cls, session: AsyncSession, name: str, password: str) -> int:
         row = (await session.execute(select(cls.id, cls.password).where(cls.name == name))).first()
         if row:
             try:
@@ -59,7 +61,7 @@ class User(UserBase, table=True):
         return encode_token(token.model_dump())
 
     @classmethod
-    async def delete_by_name(cls, session: async_session, name: str) -> int:
+    async def delete_by_name(cls, session: AsyncSession, name: str) -> int:
         return (await session.execute(delete(cls).where(cls.name == name))).rowcount  # type: ignore
 
 
@@ -82,5 +84,8 @@ def get_current_user_id(token: str | bytes = Depends(oauth2_scheme)) -> int:
             raise credentials_exception
 
         return user_id
+    except HTTPException:
+        raise
     except Exception:
+        logging.exception('')
         raise credentials_exception

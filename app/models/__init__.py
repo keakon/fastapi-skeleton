@@ -1,7 +1,7 @@
 from typing import Any, Sequence, TypeGuard
 
 from sqlalchemy import Column, Row
-from sqlalchemy.ext.asyncio import async_session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.sql import func, text
 from sqlalchemy.sql.elements import TextClause
@@ -21,7 +21,7 @@ class BaseModel(SQLModel, table=False):
     @classmethod
     async def get_by_id(
         cls,
-        session: async_session,
+        session: AsyncSession,
         id: int,
         columns: list | tuple | InstrumentedAttribute | TextClause | Column | None = None,
         for_update: bool = False,
@@ -50,7 +50,7 @@ class BaseModel(SQLModel, table=False):
     @classmethod
     async def get_by_ids(
         cls,
-        session: async_session,
+        session: AsyncSession,
         ids: Sequence[int],
         columns: list | tuple | InstrumentedAttribute | TextClause | Column | None = None,
         for_update: bool = False,
@@ -81,7 +81,7 @@ class BaseModel(SQLModel, table=False):
     @classmethod
     async def exsit(
         cls,
-        session: async_session,
+        session: AsyncSession,
         id: int,
         for_update: bool = False,
         for_read: bool = False
@@ -96,7 +96,7 @@ class BaseModel(SQLModel, table=False):
     @classmethod
     async def get_all(
         cls,
-        session: async_session,
+        session: AsyncSession,
         columns: list | tuple | InstrumentedAttribute | None = None,
         for_update: bool = False,
         for_read: bool = False
@@ -121,25 +121,25 @@ class BaseModel(SQLModel, table=False):
             return (await session.execute(query)).all()
 
     @classmethod
-    async def count_all(cls, session: async_session) -> int:
+    async def count_all(cls, session: AsyncSession) -> int:
         return (await session.scalars(select(func.count()).select_from(cls))).first()  # type: ignore
 
     @classmethod
-    async def update_by_id(cls, session: async_session, id: int, values: Values) -> int:
+    async def update_by_id(cls, session: AsyncSession, id: int, values: Values) -> int:
         return (await session.execute(update(cls).where(cls.id == id).values(**values))).rowcount  # type: ignore
 
     @classmethod
-    async def delete_by_id(cls, session: async_session, id: int) -> int:
+    async def delete_by_id(cls, session: AsyncSession, id: int) -> int:
         return (await session.execute(delete(cls).where(cls.id == id))).rowcount  # type: ignore
 
     @classmethod
-    async def delete_by_ids(cls, session: async_session, ids: Sequence[int]) -> int:
+    async def delete_by_ids(cls, session: AsyncSession, ids: Sequence[int]) -> int:
         return (await session.execute(delete(cls).where(cls.id.in_(ids)))).rowcount  # type: ignore
 
     @classmethod
-    async def insert(cls, session: async_session, values: Values) -> int:
+    async def insert(cls, session: AsyncSession, values: Values) -> int:
         return (await session.execute(insert(cls).values(**values))).rowcount
 
     @classmethod
-    async def batch_insert(cls, session: async_session, values: list[Values | tuple]) -> int:
+    async def batch_insert(cls, session: AsyncSession, values: list[Values | tuple]) -> int:
         return (await session.execute(insert(cls).values(values))).rowcount

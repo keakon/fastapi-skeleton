@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: bitnami/mysql
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=test
+
+  redis:
+    image: bitnami/redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+
+  app:
+    image: app
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - '127.0.0.1:8000:8000'
+    environment:
+      - MYSQL_DSN=mysql+asyncmy://root@mysql:3306/test?charset=utf8mb4
+      - REDIS_DSN=redis://redis:6379/0?protocol=3
+    depends_on:
+      - mysql
+      - redis
+
+  test:
+    image: test
+    build:
+      dockerfile: test.Dockerfile
+    environment:
+      - MYSQL_DSN=mysql+asyncmy://root@mysql:3306/test?charset=utf8mb4
+      - REDIS_DSN=redis://redis:6379/0?protocol=3
+    depends_on:
+      - mysql
+      - redis
