@@ -1,6 +1,6 @@
 # FastAPI-Skeleton
 [![Build Status](https://github.com/keakon/fastapi-skeleton/actions/workflows/python.yml/badge.svg)](https://github.com/keakon/fastapi-skeleton/actions)
-[![Coverage](https://codecov.io/gh/keakon/fastapi-skeleton/branch/master/graph/badge.svg)](https://codecov.io/gh/keakon/fastapi-skeleton)
+[![Coverage](https://codecov.io/gh/keakon/fastapi-skeleton/graph/badge.svg)](https://codecov.io/gh/keakon/fastapi-skeleton)
 
 FastAPI-Skeleton is a web application template of FastAPI with best practice.
 
