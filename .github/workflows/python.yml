@@ -21,6 +21,10 @@ jobs:
           - 6379:6379
 
     steps:
+    - name: Setup MySQL
+      uses: mirromutth/mysql-action@v1.1
+      with:
+        mysql root password: "123"
     - name: Checkout code
       uses: actions/checkout@v4
     - name: Set up Python
@@ -34,15 +38,12 @@ jobs:
         sudo apt-get install -y --no-install-recommends mysql-client
         python -m pip install --upgrade pip
         pip install -r requirements.txt -r requirements-test.txt
-    - name: Setup MySQL
-      uses: mirromutth/mysql-action@v1.1
-      with:
-        mysql root password: "123"
     - name: Test
       run: |
         while ! mysqladmin ping -h 127.0.0.1 -uroot -p123 --silent; do
           sleep 1
         done
+        mysql -h 127.0.0.1 -uroot -p123 -e "CREATE DATABASE IF NOT EXISTS test"
         mysql -h 127.0.0.1 -uroot -p123 test < db/db.sql
         mysql -h 127.0.0.1 -uroot -p123 test < db/test.sql
         python create_admin.py admin
