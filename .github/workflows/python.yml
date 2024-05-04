@@ -40,7 +40,8 @@ jobs:
         mysql root password: "123"
     - name: Test
       run: |
-        mysql -uroot -p123 test < db/*.sql
+        mysql -uroot -p123 test < db/db.sql
+        mysql -uroot -p123 test < db/test.sql
         python create_admin.py admin
         pytest --ruff app --cov=app tests
       env:
