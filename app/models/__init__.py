@@ -5,8 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.sql import func, text
 from sqlalchemy.sql.elements import TextClause
-from sqlmodel import delete, Field, insert, SQLModel, select, update
-
+from sqlmodel import Field, SQLModel, delete, insert, select, update
 
 Values = dict[str, Any]
 
@@ -25,7 +24,7 @@ class BaseModel(SQLModel, table=False):
         id: int,
         columns: list | tuple | InstrumentedAttribute | TextClause | Column | None = None,
         for_update: bool = False,
-        for_read: bool = False
+        for_read: bool = False,
     ) -> 'BaseModel | Row | None':
         if columns is None:
             query = select(cls)
@@ -54,7 +53,7 @@ class BaseModel(SQLModel, table=False):
         ids: Sequence[int],
         columns: list | tuple | InstrumentedAttribute | TextClause | Column | None = None,
         for_update: bool = False,
-        for_read: bool = False
+        for_read: bool = False,
     ) -> 'Sequence[BaseModel | Row]':
         if not ids:
             return []
@@ -79,13 +78,7 @@ class BaseModel(SQLModel, table=False):
             return (await session.execute(query)).all()
 
     @classmethod
-    async def exsit(
-        cls,
-        session: AsyncSession,
-        id: int,
-        for_update: bool = False,
-        for_read: bool = False
-    ) -> bool:
+    async def exsit(cls, session: AsyncSession, id: int, for_update: bool = False, for_read: bool = False) -> bool:
         query = select(text('1')).select_from(cls).where(cls.id == id)
         if for_update:
             query = query.with_for_update()
@@ -99,7 +92,7 @@ class BaseModel(SQLModel, table=False):
         session: AsyncSession,
         columns: list | tuple | InstrumentedAttribute | None = None,
         for_update: bool = False,
-        for_read: bool = False
+        for_read: bool = False,
     ) -> 'Sequence[BaseModel | Row]':
         if columns is None:
             query = select(cls)
@@ -138,7 +131,7 @@ class BaseModel(SQLModel, table=False):
 
     @classmethod
     async def insert(cls, session: AsyncSession, values: Values) -> int:
-        return (await session.execute(insert(cls).values(**values))).rowcount
+        return (await session.execute(insert(cls).values(**values))).lastrowid
 
     @classmethod
     async def batch_insert(cls, session: AsyncSession, values: list[Values | tuple]) -> int:

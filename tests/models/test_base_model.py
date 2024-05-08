@@ -343,13 +343,13 @@ class TestBaseModel:
         async with async_session() as session:
             await session.execute(text('TRUNCATE TABLE model'))
 
-            count = await Model.insert(session, {'name': 'test'})
-            assert count == 1
+            row_id = await Model.insert(session, {'name': 'test'})
+            assert row_id == 1
             name = await Model.get_by_id(session, 1, Model.name)  # type: ignore
             assert name == 'test'
 
-            count = await Model.insert(session, {'id': 3, 'name': 'test3'})
-            assert count == 1
+            row_id = await Model.insert(session, {'id': 3, 'name': 'test3'})
+            assert row_id == 3
             name = await Model.get_by_id(session, 3, Model.name)  # type: ignore
             assert name == 'test3'
 
