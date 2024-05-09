@@ -29,7 +29,7 @@ class BaseModel(SQLModel, table=False):
         columns: list | tuple | InstrumentedAttribute | TextClause | Column | None = None,
         for_update: bool = False,
         for_read: bool = False,
-    ) -> 'BaseModel | Row | None':
+    ) -> Any:
         if columns is None:
             query = select(cls)
             scalar = True
@@ -46,7 +46,7 @@ class BaseModel(SQLModel, table=False):
         elif for_read:
             query = query.with_for_update(read=True)
         if scalar:
-            return (await session.scalars(query)).first()
+            return await session.scalar(query)
         else:
             return (await session.execute(query)).first()
 
@@ -88,7 +88,7 @@ class BaseModel(SQLModel, table=False):
             query = query.with_for_update()
         elif for_read:
             query = query.with_for_update(read=True)
-        return (await session.scalars(query)).first() is not None
+        return (await session.scalar(query)) is not None
 
     @classmethod
     async def get_all(
@@ -119,7 +119,7 @@ class BaseModel(SQLModel, table=False):
 
     @classmethod
     async def count_all(cls, session: AsyncSession) -> int:
-        return (await session.scalars(select(func.count()).select_from(cls))).first()  # type: ignore
+        return await session.scalar(select(func.count()).select_from(cls))  # type: ignore
 
     @classmethod
     async def update_by_id(cls, session: AsyncSession, id: int, values: Values) -> int:
