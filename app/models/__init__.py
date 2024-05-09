@@ -1,4 +1,4 @@
-from typing import Any, Sequence, TypeGuard
+from typing import Any, Sequence, Type, TypeGuard, TypeVar
 
 from sqlalchemy import Column, Row
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,8 +10,12 @@ from sqlmodel import Field, SQLModel, delete, insert, select, update
 Values = dict[str, Any]
 
 
-def is_sql_models(vals) -> TypeGuard[Sequence[SQLModel]]:
-    return isinstance(vals, Sequence) and all(isinstance(val, SQLModel) for val in vals)
+T = TypeVar('T')
+Sub = TypeVar('Sub')
+
+
+def all_is_instance(vals: Sequence[T], t: Type[Sub]) -> TypeGuard[Sequence[Sub]]:
+    return all(isinstance(val, t) for val in vals)
 
 
 class BaseModel(SQLModel, table=False):

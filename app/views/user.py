@@ -5,13 +5,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import Row
 
 from app.clients.mysql import async_session
-from app.models import is_sql_models
-from app.models.user import get_current_user_id, User, UserBase
+from app.models import all_is_instance
+from app.models.user import User, UserBase, get_current_user_id
 from app.router import router
 from app.schemas.resp import Resp
 from app.schemas.user import UserRequest
 from app.utils.exception import HTTPError
-from app.utils.format import row_dump, models_dump
+from app.utils.format import models_dump, row_dump
 
 
 @router.post('/user', response_model=Resp, response_model_exclude_none=True, status_code=201)
@@ -64,7 +64,9 @@ async def get_user_name(user_id: int, current_user_id: int = Depends(get_current
 
 
 @router.patch('/user/{user_id}/name', response_model=Resp, response_model_exclude_none=True)
-async def set_user_name(user_id: int, name: Annotated[str, Body(embed=True)], current_user_id: int = Depends(get_current_user_id)):
+async def set_user_name(
+    user_id: int, name: Annotated[str, Body(embed=True)], current_user_id: int = Depends(get_current_user_id)
+):
     async with async_session() as session:
         if await User.update_by_id(session, user_id, {'name': name}):
             await session.commit()
@@ -87,6 +89,6 @@ async def get_user_list(current_user_id: int = Depends(get_current_user_id)):
     if current_user_id == 1:
         async with async_session() as session:
             users = await User.get_all(session)
-        assert is_sql_models(users)
+        assert all_is_instance(users, User)
         return Resp(data={'users': models_dump(users, exclude=set(['password']))})
     raise HTTPError(403)

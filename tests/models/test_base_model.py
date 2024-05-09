@@ -1,9 +1,9 @@
 import pytest
-from sqlalchemy import Column
+from sqlalchemy import Column, Row
 from sqlalchemy.sql import text
 
 from app.clients.mysql import async_session
-from app.models import BaseModel
+from app.models import BaseModel, all_is_instance
 
 
 class Model(BaseModel, table=True):
@@ -23,17 +23,17 @@ class TestBaseModel:
             await session.commit()
 
             model = await Model.get_by_id(session, 1)
-            assert model
+            assert isinstance(model, Model)
             assert model.id == 1
             assert model.name == 'test'
 
             model = await Model.get_by_id(session, 1, for_update=True)
-            assert model
+            assert isinstance(model, Model)
             assert model.id == 1
             assert model.name == 'test'
 
             model = await Model.get_by_id(session, 1, for_read=True)
-            assert model
+            assert isinstance(model, Model)
             assert model.id == 1
             assert model.name == 'test'
 
@@ -56,17 +56,17 @@ class TestBaseModel:
             assert name == 'test'
 
             row = await Model.get_by_id(session, 1, (Model.name,))
-            assert row
+            assert isinstance(row, Row)
             assert row.name == 'test'
             assert row[0] == 'test'
 
             row = await Model.get_by_id(session, 1, [Model.name])
-            assert row
+            assert isinstance(row, Row)
             assert row.name == 'test'
             assert row[0] == 'test'
 
             row = await Model.get_by_id(session, 1, (Model.id, Model.name))
-            assert row
+            assert isinstance(row, Row)
             assert row.id == 1
             assert row[0] == 1
             assert row.name == 'test'
@@ -85,6 +85,7 @@ class TestBaseModel:
 
             models = await Model.get_by_ids(session, (1, 2, 3))
             assert len(models) == 2
+            assert all_is_instance(models, Model)
             model0, model1 = models
             assert model0.id == 1
             assert model0.name == 'test'
@@ -99,6 +100,7 @@ class TestBaseModel:
 
             models = await Model.get_by_ids(session, [1, 2, 3], for_update=True)
             assert len(models) == 2
+            assert all_is_instance(models, Model)
             model0, model1 = models
             assert model0.id == 1
             assert model0.name == 'test'
@@ -107,6 +109,7 @@ class TestBaseModel:
 
             models = await Model.get_by_ids(session, [1, 2, 3], for_read=True)
             assert len(models) == 2
+            assert all_is_instance(models, Model)
             model0, model1 = models
             assert model0.id == 1
             assert model0.name == 'test'
@@ -151,6 +154,7 @@ class TestBaseModel:
 
             rows = await Model.get_by_ids(session, (1, 2, 3), (Model.name,))
             assert len(rows) == 2
+            assert all_is_instance(rows, Row)
             row0, row1 = rows
             assert row0.name == 'test'
             assert row0[0] == 'test'
@@ -159,6 +163,7 @@ class TestBaseModel:
 
             rows = await Model.get_by_ids(session, (1, 2, 3), [Model.name])
             assert len(rows) == 2
+            assert all_is_instance(rows, Row)
             row0, row1 = rows
             assert row0.name == 'test'
             assert row0[0] == 'test'
@@ -167,6 +172,7 @@ class TestBaseModel:
 
             rows = await Model.get_by_ids(session, (1, 2, 3), (Model.id, Model.name))
             assert len(rows) == 2
+            assert all_is_instance(rows, Row)
             row0, row1 = rows
             assert row0.id == 1
             assert row0.name == 'test'
@@ -196,6 +202,7 @@ class TestBaseModel:
 
             models = await Model.get_all(session)
             assert len(models) == 2
+            assert all_is_instance(models, Model)
             model0, model1 = models
             assert model0.id == 1
             assert model0.name == 'test'
@@ -204,6 +211,7 @@ class TestBaseModel:
 
             models = await Model.get_all(session, for_update=True)
             assert len(models) == 2
+            assert all_is_instance(models, Model)
             model0, model1 = models
             assert model0.id == 1
             assert model0.name == 'test'
@@ -212,6 +220,7 @@ class TestBaseModel:
 
             models = await Model.get_all(session, for_read=True)
             assert len(models) == 2
+            assert all_is_instance(models, Model)
             model0, model1 = models
             assert model0.id == 1
             assert model0.name == 'test'
@@ -244,6 +253,7 @@ class TestBaseModel:
 
             rows = await Model.get_all(session, (Model.name,))
             assert len(rows) == 2
+            assert all_is_instance(rows, Row)
             row0, row1 = rows
             assert row0.name == 'test'
             assert row0[0] == 'test'
@@ -252,6 +262,7 @@ class TestBaseModel:
 
             rows = await Model.get_all(session, [Model.name])
             assert len(rows) == 2
+            assert all_is_instance(rows, Row)
             row0, row1 = rows
             assert row0.name == 'test'
             assert row0[0] == 'test'
@@ -260,6 +271,7 @@ class TestBaseModel:
 
             rows = await Model.get_all(session, (Model.id, Model.name))
             assert len(rows) == 2
+            assert all_is_instance(rows, Row)
             row0, row1 = rows
             assert row0.id == 1
             assert row0.name == 'test'
@@ -362,6 +374,7 @@ class TestBaseModel:
 
             models = await Model.get_all(session)
             assert len(models) == 2
+            assert all_is_instance(models, Model)
             model0, model1 = models
             assert model0.id == 1
             assert model0.name == 'test'
@@ -373,6 +386,7 @@ class TestBaseModel:
 
             models = await Model.get_all(session)
             assert len(models) == 4
+            assert all_is_instance(models, Model)
             model2, model3 = models[2:]
             assert model2.id == 3
             assert model2.name == 'test3'
