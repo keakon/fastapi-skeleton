@@ -179,15 +179,15 @@ class TestBaseModel:
             assert row1.id == 2
             assert row1.name == 'test2'
 
-    async def test_exsit(self):
+    async def test_exist(self):
         async with async_session() as session:
             await session.execute(text('TRUNCATE TABLE model'))
 
-            assert not await Model.exsit(session, 1)
+            assert not await Model.exist(session, 1)
 
             session.add(Model(name='test'))
             await session.commit()
-            assert await Model.exsit(session, 1)
+            assert await Model.exist(session, 1)
 
     async def test_get_all(self):
         async with async_session() as session:

@@ -82,7 +82,7 @@ class BaseModel(SQLModel, table=False):
             return (await session.execute(query)).all()
 
     @classmethod
-    async def exsit(cls, session: AsyncSession, id: int, for_update: bool = False, for_read: bool = False) -> bool:
+    async def exist(cls, session: AsyncSession, id: int, for_update: bool = False, for_read: bool = False) -> bool:
         query = select(text('1')).select_from(cls).where(cls.id == id)
         if for_update:
             query = query.with_for_update()
