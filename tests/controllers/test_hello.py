@@ -13,6 +13,7 @@ def test_hello():
     assert response.json()['code'] == 0
     assert response.json()['msg'] == 'Hello, abc!'
 
+
 @pytest.mark.asyncio(scope='session')
 async def test_hello_to_self():
     async with async_session() as session:

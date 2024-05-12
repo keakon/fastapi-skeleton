@@ -19,7 +19,7 @@ def all_is_instance(vals: Sequence[T], t: Type[Sub]) -> TypeGuard[Sequence[Sub]]
 
 
 class BaseModel(SQLModel, table=False):
-    id: int | None = Field(default=None, primary_key=True)
+    id: int = Field(default=None, primary_key=True)
 
     @classmethod
     async def get_by_id(

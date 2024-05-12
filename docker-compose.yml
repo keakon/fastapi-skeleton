@@ -12,6 +12,7 @@ services:
 
   app:
     image: app
+    pull_policy: build
     build:
       dockerfile: Dockerfile
     ports:
@@ -25,11 +26,11 @@ services:
 
   test:
     image: test
+    pull_policy: build
     build:
       dockerfile: test.Dockerfile
     environment:
       - MYSQL_DSN=mysql+asyncmy://root@mysql:3306/test?charset=utf8mb4
       - REDIS_DSN=redis://redis:6379/0?protocol=3
     depends_on:
-      - mysql
-      - redis
+      - app

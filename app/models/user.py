@@ -1,21 +1,23 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 from time import time
 
 from argon2 import PasswordHasher
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
-from sqlmodel import delete, Field, select
-from starlette.exceptions import HTTPException
+from sqlmodel import Field, delete, select
 
 from app.config import config
 from app.schemas.token import TokenPayload
-from app.utils.exception import credentials_exception
+from app.utils.exception import (
+    expired_token_error,
+    internal_server_error,
+    invalid_token_error,
+)
 from app.utils.token import decode_token, encode_token, oauth2_scheme
 
 from . import BaseModel
-
 
 HASHED_PASSWORD_PREFIX = '$argon2id$v=19$m=65536,t=3,p=4$'
 HASHED_PASSWORD_PREFIX_LENGTH = len(HASHED_PASSWORD_PREFIX)
@@ -29,7 +31,9 @@ class UserBase(BaseModel):
 class User(UserBase, table=True):
     password: str
     created_at: datetime = Field(sa_column_kwargs={'server_default': text('CURRENT_TIMESTAMP')})
-    updated_at: datetime = Field(sa_column_kwargs={'server_default': text('CURRENT_TIMESTAMP'), 'server_onupdate': text('CURRENT_TIMESTAMP')})
+    updated_at: datetime = Field(
+        sa_column_kwargs={'server_default': text('CURRENT_TIMESTAMP'), 'server_onupdate': text('CURRENT_TIMESTAMP')}
+    )
 
     def __init__(self, name: str, password: str):
         self.name = name
@@ -67,25 +71,20 @@ class User(UserBase, table=True):
 
 def get_current_user_id(token: str | bytes = Depends(oauth2_scheme)) -> int:
     paseto = decode_token(token)
-    if not paseto:
-        raise credentials_exception
+    if not (paseto and isinstance(paseto.payload, bytes)):
+        raise invalid_token_error
     try:
-        assert isinstance(paseto.payload, bytes)
         payload = TokenPayload.model_validate_json(paseto.payload)
-
-        user_id = payload.user_id
-        if user_id <= 0:
-            raise credentials_exception
-
-        now = int(time())
-        if now < payload.not_before:
-            raise credentials_exception
-        if now > payload.expire_at:
-            raise credentials_exception
-
-        return user_id
-    except HTTPException:
-        raise
+    except ValueError:
+        raise invalid_token_error
     except Exception:
         logging.exception('')
-        raise credentials_exception
+        raise internal_server_error
+
+    now = int(time())
+    if now < payload.not_before:
+        raise invalid_token_error
+    if now > payload.expire_at:
+        raise expired_token_error
+
+    return payload.user_id

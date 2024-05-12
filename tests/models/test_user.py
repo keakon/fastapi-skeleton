@@ -1,11 +1,10 @@
-from argon2.exceptions import VerifyMismatchError
 import pytest
+from argon2.exceptions import VerifyMismatchError
 from sqlmodel import delete
-from starlette.exceptions import HTTPException
 
 from app.clients.mysql import async_session
-from app.models.user import get_current_user_id, User
-
+from app.models.user import User, get_current_user_id
+from app.utils.exception import HTTPError
 
 
 class TestUser:
@@ -65,9 +64,9 @@ class TestUser:
 
 
 def test_get_current_user_id():
-    with pytest.raises(HTTPException):
+    with pytest.raises(HTTPError):
         get_current_user_id('')
-    with pytest.raises(HTTPException):
+    with pytest.raises(HTTPError):
         get_current_user_id('1')
 
     token = User.generate_token(1)
