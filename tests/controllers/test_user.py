@@ -1,11 +1,11 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import delete
+from sqlmodel import col, delete
 
+from app.clients.mysql import async_session
 from app.models.user import User
 from app.schemas.token import TokenPayload
 from app.schemas.user import UserRequest
-from app.clients.mysql import async_session
 from app.utils.token import decode_token
 
 from . import async_client
@@ -63,7 +63,7 @@ async def test_get_user():
 @pytest.mark.asyncio(scope='session')
 async def test_update_user():
     async with async_session() as session:
-        if (await session.execute(delete(User).where(User.id > 1))).rowcount > 0:  # type: ignore
+        if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 
     async with async_client() as client:
@@ -81,14 +81,18 @@ async def test_update_user():
         user_id = payload.user_id
 
         data = UserRequest(name='test2', password='test2').model_dump()
-        response = await client.put(f'/api/v1/user/{user_id}', headers={'Authorization': f'Bearer {access_token}'}, json=data)
+        response = await client.put(
+            f'/api/v1/user/{user_id}', headers={'Authorization': f'Bearer {access_token}'}, json=data
+        )
         assert response.status_code == 403
 
         response = await client.post('/api/v1/login', data={'username': 'admin', 'password': 'admin'})
         assert response.status_code == 200
         access_token = response.json()['access_token']
 
-        response = await client.put(f'/api/v1/user/{user_id}', headers={'Authorization': f'Bearer {access_token}'}, json=data)
+        response = await client.put(
+            f'/api/v1/user/{user_id}', headers={'Authorization': f'Bearer {access_token}'}, json=data
+        )
         assert response.status_code == 200
 
         response = await client.post('/api/v1/login', data={'username': 'test', 'password': 'test'})
@@ -104,7 +108,7 @@ async def test_update_user():
 @pytest.mark.asyncio(scope='session')
 async def test_get_user_name():
     async with async_session() as session:
-        if (await session.execute(delete(User).where(User.id > 1))).rowcount > 0:  # type: ignore
+        if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 
     async with async_client() as client:
@@ -136,7 +140,7 @@ async def test_get_user_name():
 @pytest.mark.asyncio(scope='session')
 async def test_set_user_name():
     async with async_session() as session:
-        if (await session.execute(delete(User).where(User.id > 1))).rowcount > 0:  # type: ignore
+        if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 
     async with async_client() as client:
@@ -153,7 +157,9 @@ async def test_set_user_name():
         payload = TokenPayload.model_validate_json(token.payload)
         user_id = payload.user_id
 
-        response = await client.patch(f'/api/v1/user/{user_id}/name', headers={'Authorization': f'Bearer {access_token}'}, json={'name': 'test2'})
+        response = await client.patch(
+            f'/api/v1/user/{user_id}/name', headers={'Authorization': f'Bearer {access_token}'}, json={'name': 'test2'}
+        )
         assert response.status_code == 200
 
         response = await client.post('/api/v1/login', data={'username': 'test', 'password': 'test'})
@@ -162,14 +168,16 @@ async def test_set_user_name():
         response = await client.post('/api/v1/login', data={'username': 'test2', 'password': 'test'})
         assert response.status_code == 200
 
-        response = await client.patch('/api/v1/user/0/name', headers={'Authorization': f'Bearer {access_token}'}, json={'name': 'test2'})
+        response = await client.patch(
+            '/api/v1/user/0/name', headers={'Authorization': f'Bearer {access_token}'}, json={'name': 'test2'}
+        )
         assert response.status_code == 404
 
 
 @pytest.mark.asyncio(scope='session')
 async def test_get_user_time():
     async with async_session() as session:
-        if (await session.execute(delete(User).where(User.id > 1))).rowcount > 0:  # type: ignore
+        if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 
     async with async_client() as client:
@@ -193,7 +201,9 @@ async def test_get_user_time():
         updated_at = data['updated_at']
         assert created_at == updated_at
 
-        response = await client.patch(f'/api/v1/user/{user_id}/name', headers={'Authorization': f'Bearer {access_token}'}, json={'name': 'test2'})
+        response = await client.patch(
+            f'/api/v1/user/{user_id}/name', headers={'Authorization': f'Bearer {access_token}'}, json={'name': 'test2'}
+        )
         assert response.status_code == 200
 
         response = await client.get(f'/api/v1/user/{user_id}/time', headers={'Authorization': f'Bearer {access_token}'})
@@ -211,7 +221,7 @@ async def test_get_user_time():
 @pytest.mark.asyncio(scope='session')
 async def test_get_user_list():
     async with async_session() as session:
-        if (await session.execute(delete(User).where(User.id > 1))).rowcount > 0:  # type: ignore
+        if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 
     async with async_client() as client:

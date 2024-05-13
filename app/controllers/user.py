@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import Row
+from sqlmodel import col
 
 from app.clients.mysql import async_session
 from app.models import all_is_instance
@@ -57,7 +58,7 @@ async def update_user(user_id: int, req: UserRequest, current_user_id: int = Dep
 @router.get('/user/{user_id}/name', response_model=Resp, response_model_exclude_none=True)
 async def get_user_name(user_id: int, _=Depends(get_current_user_id)):
     async with async_session() as session:
-        user_name = await User.get_by_id(session, user_id, User.name)  # type: ignore
+        user_name = await User.get_by_id(session, user_id, col(User.name))
     if user_name:
         return Resp(data={'name': user_name})
     raise not_found_error

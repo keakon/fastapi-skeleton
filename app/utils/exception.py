@@ -40,6 +40,11 @@ expired_token_error = unauthorized_error('Expired token')
 invalid_token_error = unauthorized_error('Invalid token')
 not_authenticated_error = unauthorized_error('Not authenticated')
 
+
+def bad_request_error(msg) -> HTTPError:
+    return HTTPError(status_code=400, code=ErrorCode.BAD_REQUEST, msg=msg)
+
+
 forbidden_error = HTTPError(
     status_code=403,
     code=ErrorCode.FORBIDDEN,

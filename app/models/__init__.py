@@ -2,10 +2,11 @@ from typing import Any, Sequence, Type, TypeGuard, TypeVar
 
 from sqlalchemy import Column, Row
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Mapped
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.sql import func, text
 from sqlalchemy.sql.elements import TextClause
-from sqlmodel import Field, SQLModel, delete, insert, select, update
+from sqlmodel import Field, SQLModel, col, delete, insert, select, update
 
 Values = dict[str, Any]
 
@@ -26,7 +27,7 @@ class BaseModel(SQLModel, table=False):
         cls,
         session: AsyncSession,
         id: int,
-        columns: list | tuple | InstrumentedAttribute | TextClause | Column | None = None,
+        columns: list | tuple | InstrumentedAttribute | TextClause | Column | Mapped | None = None,
         for_update: bool = False,
         for_read: bool = False,
     ) -> Any:
@@ -55,7 +56,7 @@ class BaseModel(SQLModel, table=False):
         cls,
         session: AsyncSession,
         ids: Sequence[int],
-        columns: list | tuple | InstrumentedAttribute | TextClause | Column | None = None,
+        columns: list | tuple | InstrumentedAttribute | TextClause | Column | Mapped | None = None,
         for_update: bool = False,
         for_read: bool = False,
     ) -> 'Sequence[BaseModel | Row]':
@@ -71,7 +72,7 @@ class BaseModel(SQLModel, table=False):
             else:
                 query = select(columns)
                 scalar = True
-        query = query.where(cls.id.in_(ids))  # type: ignore
+        query = query.where(col(cls.id).in_(ids))
         if for_update:
             query = query.with_for_update()
         elif for_read:
@@ -94,7 +95,7 @@ class BaseModel(SQLModel, table=False):
     async def get_all(
         cls,
         session: AsyncSession,
-        columns: list | tuple | InstrumentedAttribute | None = None,
+        columns: list | tuple | InstrumentedAttribute | Mapped | None = None,
         for_update: bool = False,
         for_read: bool = False,
     ) -> 'Sequence[BaseModel | Row]':
@@ -123,15 +124,15 @@ class BaseModel(SQLModel, table=False):
 
     @classmethod
     async def update_by_id(cls, session: AsyncSession, id: int, values: Values) -> int:
-        return (await session.execute(update(cls).where(cls.id == id).values(**values))).rowcount  # type: ignore
+        return (await session.execute(update(cls).where(col(cls.id) == id).values(**values))).rowcount
 
     @classmethod
     async def delete_by_id(cls, session: AsyncSession, id: int) -> int:
-        return (await session.execute(delete(cls).where(cls.id == id))).rowcount  # type: ignore
+        return (await session.execute(delete(cls).where(col(cls.id) == id))).rowcount
 
     @classmethod
     async def delete_by_ids(cls, session: AsyncSession, ids: Sequence[int]) -> int:
-        return (await session.execute(delete(cls).where(cls.id.in_(ids)))).rowcount  # type: ignore
+        return (await session.execute(delete(cls).where(col(cls.id).in_(ids)))).rowcount
 
     @classmethod
     async def insert(cls, session: AsyncSession, values: Values) -> int:

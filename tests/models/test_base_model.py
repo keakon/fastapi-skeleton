@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy import Column, Row
 from sqlalchemy.sql import text
+from sqlmodel import col
 
 from app.clients.mysql import async_session
 from app.models import BaseModel, all_is_instance
@@ -14,7 +15,7 @@ class Model(BaseModel, table=True):
 class TestBaseModel:
     async def test_get_by_id(self):
         async with async_session() as session:
-            await session.execute(text('TRUNCATE TABLE model'))
+            await session.execute(text(f'TRUNCATE TABLE {Model.__tablename__}'))
 
             model = await Model.get_by_id(session, 1)
             assert model is None
@@ -55,6 +56,9 @@ class TestBaseModel:
             name = await Model.get_by_id(session, 1, Column('name'))
             assert name == 'test'
 
+            name = await Model.get_by_id(session, 1, col(Model.name))
+            assert name == 'test'
+
             row = await Model.get_by_id(session, 1, (Model.name,))
             assert isinstance(row, Row)
             assert row.name == 'test'
@@ -74,7 +78,7 @@ class TestBaseModel:
 
     async def test_get_by_ids(self):
         async with async_session() as session:
-            await session.execute(text('TRUNCATE TABLE model'))
+            await session.execute(text(f'TRUNCATE TABLE {Model.__tablename__}'))
 
             models = await Model.get_by_ids(session, (1, 2, 3))
             assert len(models) == 0
@@ -152,6 +156,12 @@ class TestBaseModel:
             assert row0 == 'test'
             assert row1 == 'test2'
 
+            rows = await Model.get_by_ids(session, (1, 2, 3), col(Model.name))
+            assert len(rows) == 2
+            row0, row1 = rows
+            assert row0 == 'test'
+            assert row1 == 'test2'
+
             rows = await Model.get_by_ids(session, (1, 2, 3), (Model.name,))
             assert len(rows) == 2
             assert all_is_instance(rows, Row)
@@ -181,7 +191,7 @@ class TestBaseModel:
 
     async def test_exist(self):
         async with async_session() as session:
-            await session.execute(text('TRUNCATE TABLE model'))
+            await session.execute(text(f'TRUNCATE TABLE {Model.__tablename__}'))
 
             assert not await Model.exist(session, 1)
 
@@ -191,7 +201,7 @@ class TestBaseModel:
 
     async def test_get_all(self):
         async with async_session() as session:
-            await session.execute(text('TRUNCATE TABLE model'))
+            await session.execute(text(f'TRUNCATE TABLE {Model.__tablename__}'))
 
             models = await Model.get_all(session)
             assert len(models) == 0
@@ -239,6 +249,12 @@ class TestBaseModel:
             assert row0 == 'test'
             assert row1 == 'test2'
 
+            rows = await Model.get_all(session, col(Model.name))
+            assert len(rows) == 2
+            row0, row1 = rows
+            assert row0 == 'test'
+            assert row1 == 'test2'
+
             rows = await Model.get_all(session, Model.name, for_update=True)  # type: ignore
             assert len(rows) == 2
             row0, row1 = rows
@@ -280,7 +296,7 @@ class TestBaseModel:
 
     async def test_count_all(self):
         async with async_session() as session:
-            await session.execute(text('TRUNCATE TABLE model'))
+            await session.execute(text(f'TRUNCATE TABLE {Model.__tablename__}'))
 
             count = await Model.count_all(session)
             assert count == 0
@@ -294,7 +310,7 @@ class TestBaseModel:
 
     async def test_update_by_id(self):
         async with async_session() as session:
-            await session.execute(text('TRUNCATE TABLE model'))
+            await session.execute(text(f'TRUNCATE TABLE {Model.__tablename__}'))
 
             count = await Model.update_by_id(session, 1, {'name': 'test2'})
             assert count == 0
@@ -304,17 +320,17 @@ class TestBaseModel:
 
             count = await Model.update_by_id(session, 1, {'name': 'test2'})
             assert count == 1
-            name = await Model.get_by_id(session, 1, Model.name)  # type: ignore
+            name = await Model.get_by_id(session, 1, col(Model.name))
             assert name == 'test2'
 
             count = await Model.update_by_id(session, 1, {Model.id.name: 2})  # type: ignore
             assert count == 1
-            name = await Model.get_by_id(session, 2, Model.name)  # type: ignore
+            name = await Model.get_by_id(session, 2, col(Model.name))
             assert name == 'test2'
 
     async def test_delete_by_id(self):
         async with async_session() as session:
-            await session.execute(text('TRUNCATE TABLE model'))
+            await session.execute(text(f'TRUNCATE TABLE {Model.__tablename__}'))
 
             count = await Model.delete_by_id(session, 1)
             assert count == 0
@@ -328,7 +344,7 @@ class TestBaseModel:
 
     async def test_delete_by_ids(self):
         async with async_session() as session:
-            await session.execute(text('TRUNCATE TABLE model'))
+            await session.execute(text(f'TRUNCATE TABLE {Model.__tablename__}'))
 
             count = await Model.delete_by_ids(session, (1, 2))
             assert count == 0
@@ -353,21 +369,21 @@ class TestBaseModel:
 
     async def test_insert(self):
         async with async_session() as session:
-            await session.execute(text('TRUNCATE TABLE model'))
+            await session.execute(text(f'TRUNCATE TABLE {Model.__tablename__}'))
 
             row_id = await Model.insert(session, {'name': 'test'})
             assert row_id == 1
-            name = await Model.get_by_id(session, 1, Model.name)  # type: ignore
+            name = await Model.get_by_id(session, 1, col(Model.name))
             assert name == 'test'
 
             row_id = await Model.insert(session, {'id': 3, 'name': 'test3'})
             assert row_id == 3
-            name = await Model.get_by_id(session, 3, Model.name)  # type: ignore
+            name = await Model.get_by_id(session, 3, col(Model.name))
             assert name == 'test3'
 
     async def test_batch_insert(self):
         async with async_session() as session:
-            await session.execute(text('TRUNCATE TABLE model'))
+            await session.execute(text(f'TRUNCATE TABLE {Model.__tablename__}'))
 
             count = await Model.batch_insert(session, [{'name': 'test'}, {'name': 'test2'}])
             assert count == 2
