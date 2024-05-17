@@ -1,7 +1,7 @@
 import pytest
 from sqlmodel import col, delete
 
-from app.clients.mysql import async_session
+from app.clients.mysql import get_session
 from app.models.user import User
 
 from . import async_client, client
@@ -16,7 +16,7 @@ def test_hello():
 
 @pytest.mark.asyncio(scope='session')
 async def test_hello_to_self():
-    async with async_session() as session:
+    async with get_session() as session:
         if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 

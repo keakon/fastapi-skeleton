@@ -39,10 +39,10 @@ $ coverage html
 ## Build and run with docker
 
 ```bash
-$ docker-compose build
-$ docker-compose up -d
+$ docker compose build
+$ docker compose up -d
 ```
 
-## Try api docs.
+## Try API docs.
 
 Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).

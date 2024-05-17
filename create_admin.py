@@ -1,12 +1,12 @@
 import asyncio
 import sys
 
-from app.clients.mysql import async_session
+from app.clients.mysql import get_session
 from app.models.user import User
 
 
 async def create_admin(password: str) -> None:
-    async with async_session() as session:
+    async with get_session() as session:
         session.add(User(name='admin', password=password))
         await session.commit()
 

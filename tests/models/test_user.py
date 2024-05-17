@@ -2,7 +2,7 @@ import pytest
 from argon2.exceptions import VerifyMismatchError
 from sqlmodel import col, delete
 
-from app.clients.mysql import async_session
+from app.clients.mysql import get_session
 from app.models.user import User, get_current_user_id
 from app.utils.exception import HTTPError
 
@@ -33,7 +33,7 @@ class TestUser:
 
     @pytest.mark.asyncio(scope='session')
     async def test_get_verified_user_id(self):
-        async with async_session() as session:
+        async with get_session() as session:
             if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
                 await session.commit()
 
@@ -51,7 +51,7 @@ class TestUser:
 
     @pytest.mark.asyncio(scope='session')
     async def test_delete_by_name(self):
-        async with async_session() as session:
+        async with get_session() as session:
             if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
                 await session.commit()
 

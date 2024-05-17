@@ -3,7 +3,7 @@ import pytest
 from . import async_client
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope='session')
 async def test_get_count():
     async with async_client() as client:
         response = await client.get('/api/v1/count')

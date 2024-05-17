@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import col, delete
 
-from app.clients.mysql import async_session
+from app.clients.mysql import get_session
 from app.models.user import User
 from app.schemas.token import TokenPayload
 from app.schemas.user import UserRequest
@@ -13,7 +13,7 @@ from . import async_client
 
 @pytest.mark.asyncio(scope='session')
 async def test_create_user():
-    async with async_session() as session:
+    async with get_session() as session:
         if await User.delete_by_name(session, 'test') > 0:
             await session.commit()
 
@@ -28,7 +28,7 @@ async def test_create_user():
 
 @pytest.mark.asyncio(scope='session')
 async def test_login():
-    async with async_session() as session:
+    async with get_session() as session:
         if await User.delete_by_name(session, 'test') > 0:
             await session.commit()
 
@@ -62,7 +62,7 @@ async def test_get_user():
 
 @pytest.mark.asyncio(scope='session')
 async def test_update_user():
-    async with async_session() as session:
+    async with get_session() as session:
         if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 
@@ -107,7 +107,7 @@ async def test_update_user():
 
 @pytest.mark.asyncio(scope='session')
 async def test_get_user_name():
-    async with async_session() as session:
+    async with get_session() as session:
         if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 
@@ -139,7 +139,7 @@ async def test_get_user_name():
 
 @pytest.mark.asyncio(scope='session')
 async def test_set_user_name():
-    async with async_session() as session:
+    async with get_session() as session:
         if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 
@@ -176,7 +176,7 @@ async def test_set_user_name():
 
 @pytest.mark.asyncio(scope='session')
 async def test_get_user_time():
-    async with async_session() as session:
+    async with get_session() as session:
         if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 
@@ -220,7 +220,7 @@ async def test_get_user_time():
 
 @pytest.mark.asyncio(scope='session')
 async def test_get_user_list():
-    async with async_session() as session:
+    async with get_session() as session:
         if (await session.execute(delete(User).where(col(User.id) > 1))).rowcount > 0:
             await session.commit()
 
