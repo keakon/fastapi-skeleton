@@ -1,4 +1,4 @@
-from typing import Any, Sequence, Type, TypeGuard, TypeVar
+from typing import Any, Self, Sequence, Type, TypeGuard, TypeVar
 
 from sqlalchemy import Column, Row
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,7 +59,7 @@ class BaseModel(SQLModel, table=False):
         columns: list | tuple | InstrumentedAttribute | TextClause | Column | Mapped | None = None,
         for_update: bool = False,
         for_read: bool = False,
-    ) -> 'Sequence[BaseModel | Row]':
+    ) -> Sequence[Self | Row]:
         if not ids:
             return []
         if columns is None:
@@ -98,7 +98,7 @@ class BaseModel(SQLModel, table=False):
         columns: list | tuple | InstrumentedAttribute | Mapped | None = None,
         for_update: bool = False,
         for_read: bool = False,
-    ) -> 'Sequence[BaseModel | Row]':
+    ) -> Sequence[Self | Row]:
         if columns is None:
             query = select(cls)
             scalar = True
