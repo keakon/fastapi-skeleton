@@ -2,8 +2,10 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware import Middleware
 
 from app.router import router
+from app.utils.etag import ETagMiddleware
 from app.utils.exception import (
     HTTPError,
     exception_handler,
@@ -20,7 +22,7 @@ logging.basicConfig(
 
 auto_import('app/controllers')
 
-app = FastAPI()
+app = FastAPI(middleware=[Middleware(ETagMiddleware)])
 app.include_router(router)
 app.exception_handler(Exception)(exception_handler)
 app.exception_handler(HTTPError)(http_error_handler)

@@ -20,7 +20,7 @@ async def http_error_handler(request: Request, exc: HTTPError):
 async def validation_error_handler(request: Request, exc: RequestValidationError):
     try:
         arg = exc.args[0][0]
-        msg = f'{arg['msg']}: {'->'.join(arg['loc'])}'
+        msg = f"{arg['msg']}: {'->'.join(loc if isinstance(loc, str) else str(loc) for loc in arg['loc'])}"
     except Exception:
         msg = 'Bad Request'
     return JSONResponse(status_code=400, content={'code': ErrorCode.BAD_REQUEST, 'msg': msg})

@@ -1,6 +1,6 @@
-from typing import Any, Self, Sequence, Type, TypeGuard, TypeVar
+from typing import Any, Sequence, Type, TypeGuard, TypeVar
 
-from sqlalchemy import Column, Row
+from sqlalchemy import Column
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -9,7 +9,6 @@ from sqlalchemy.sql.elements import TextClause
 from sqlmodel import Field, SQLModel, col, delete, insert, select, update
 
 Values = dict[str, Any]
-
 
 T = TypeVar('T')
 Sub = TypeVar('Sub')
@@ -59,7 +58,7 @@ class BaseModel(SQLModel, table=False):
         columns: list | tuple | InstrumentedAttribute | TextClause | Column | Mapped | None = None,
         for_update: bool = False,
         for_read: bool = False,
-    ) -> Sequence[Self | Row]:
+    ) -> Sequence:
         if not ids:
             return []
         if columns is None:
@@ -98,7 +97,7 @@ class BaseModel(SQLModel, table=False):
         columns: list | tuple | InstrumentedAttribute | Mapped | None = None,
         for_update: bool = False,
         for_read: bool = False,
-    ) -> Sequence[Self | Row]:
+    ) -> Sequence:
         if columns is None:
             query = select(cls)
             scalar = True
@@ -139,5 +138,14 @@ class BaseModel(SQLModel, table=False):
         return (await session.execute(insert(cls).values(**values))).lastrowid
 
     @classmethod
-    async def batch_insert(cls, session: AsyncSession, values: list[Values | tuple]) -> int:
-        return (await session.execute(insert(cls).values(values))).rowcount
+    async def batch_insert(cls, session: AsyncSession, values: list[Values | tuple], batch_size: int = 1000) -> int:
+        total_count = len(values)
+
+        row_count: int = 0
+        i: int = 0
+        while i < total_count:
+            batch_values = values[i : i + batch_size]
+            row_count += (await session.execute(insert(cls).values(batch_values))).rowcount
+            i += batch_size
+
+        return row_count
